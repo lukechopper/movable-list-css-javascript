@@ -3,7 +3,7 @@ const path = require('path');
 module.exports = {
     entry: './src/app.js',
     resolve: {
-        extensions: ['js']
+        extensions: ['.js']
     },
     module: {
         rules: [
@@ -36,6 +36,7 @@ module.exports = {
             directory: path.join(__dirname, 'public'),
         },
         compress: true,
-        hot: true
+        hot: true,
+        port: 9000
       },
 }

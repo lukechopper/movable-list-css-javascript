@@ -1,3 +1,29 @@
 body{
-    background-color: darkgray;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+.items{
+    position: relative;
+    width: 250px;
+}
+
+.item{
+    position: absolute;
+    background-color: lightgray;
+    width: 250px;
+    left: 0;
+    height: 100px;
+    line-height: 100px;
+    font-size: 3rem;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    transition: top 0.4s ease-out, left 0.4s ease-out;
+}
+.item[selected*='yes']{
+    transition: none;
 }
