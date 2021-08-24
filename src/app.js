@@ -1,15 +1,17 @@
 import './css/global.css';
 import './css/styles.css';
 
-let pos = {x: null, y: null};
-let mouseDown = false;
-let selectedItem = null;
-let resetTransition = false;
+let pos = {x: null, y: null}; //Mouse coordinates
+let diff = {x: null, y: null}; //So that mouse can drag item on the correct spot
+let mouseDown = false; //Needs to be true for logic in 'mouseMove' event listener to be activated
+let selectedItem = null; //Allows clicked on item to be tracked in 'mouseMove' event listener
+let resetTransition = false; //Cooldown to prevent position errors
+let transitionTime = 400; //In milliseconds
 const itemsEle = document.querySelector('.items');
 
 const numOfItems = document.querySelectorAll('.items .item').length;
 //Set fixed height of items container
-document.querySelector('.items').style.height = (numOfItems * 100) + (numOfItems * 10) + 'px';
+document.querySelector('.items').style.height = (numOfItems * 70) + (numOfItems * 10) + 'px';
 
 function positionItems(insertIndex = null){
     let itemsList = document.querySelectorAll('.items .item'); itemsList = Array.prototype.slice.call(itemsList); itemsList = itemsList.filter(item => item.getAttribute('selected') !== 'yes');
@@ -18,7 +20,7 @@ function positionItems(insertIndex = null){
         if(insertIndex === indexCounter + 1){
             indexCounter++;
         }
-        item.style.top = (100 * indexCounter) + (indexCounter * 10) + 'px';
+        item.style.top = (70 * indexCounter) + (indexCounter * 10) + 'px';
         item.setAttribute('order', indexCounter + 1);
         indexCounter++;
     });
@@ -36,9 +38,9 @@ function positionItemsInOrder(){
             item.style.left = '0';
             setTimeout(function(){
                 item.style.zIndex = '0';
-            }, 400);
+            }, transitionTime);
         };
-        item.style.top = (100 * index) + (index * 10) + 'px';
+        item.style.top = (70 * index) + (index * 10) + 'px';
         item.setAttribute('order', index + 1);
     });
     resetTransition = true;
@@ -51,14 +53,15 @@ function positionItemsInOrder(){
             itemsEle.append(item);
         });
         resetTransition = false;
-    }, 400);
+    }, transitionTime);
 }
 
 document.querySelectorAll('.items .item').forEach(function(item, index){
     item.addEventListener('mousedown', function(e){
         if(!pos.x || resetTransition) return;
         mouseDown = true, selectedItem = item;
-        let offsetY = (pos.y - itemsEle.offsetTop) - (item.clientHeight / 2), offsetX = (pos.x - itemsEle.offsetLeft) - (item.clientWidth / 2);
+        diff.y = pos.y - item.offsetTop, diff.x = pos.x - item.offsetLeft;
+        let offsetY = pos.y - diff.y, offsetX = pos.x - diff.x;
         item.style.top = offsetY + 'px';
         item.style.left = offsetX  + 'px';
         item.style.zIndex = '1000';
@@ -71,17 +74,17 @@ document.querySelectorAll('.items .item').forEach(function(item, index){
 });
 
 addEventListener('mousemove', function(e){
-    pos.x = e.clientX, pos.y = e.clientY;
+    pos.x = e.clientX - itemsEle.offsetLeft, pos.y = e.clientY - itemsEle.offsetTop;
     if(!mouseDown) return;
-    let offsetY = (pos.y - itemsEle.offsetTop) - (selectedItem.clientHeight / 2), offsetX = (pos.x - itemsEle.offsetLeft) - (selectedItem.clientWidth / 2);
+    let offsetY = pos.y - diff.y, offsetX = pos.x - diff.x;
     selectedItem.style.top = offsetY + 'px';
     selectedItem.style.left = offsetX + 'px';
-    let itemsList = document.querySelectorAll('.items .item'); itemsList = Array.prototype.slice.call(itemsList); itemsList = itemsList.filter(item => item.getAttribute('selected') !== 'yes');
+    // let itemsList = document.querySelectorAll('.items .item'); itemsList = Array.prototype.slice.call(itemsList); itemsList = itemsList.filter(item => item.getAttribute('selected') !== 'yes');
     let orderOfSelectedItem = Number(selectedItem.getAttribute('order'));
     //Test for new position
     if(orderOfSelectedItem !== 1){
         let beforeItem = document.querySelector(`.items .item[order*="${orderOfSelectedItem - 1}"]`);
-        let beforeMiddle = (pos.y - itemsEle.offsetTop) < beforeItem.offsetTop + (beforeItem.clientHeight / 2);
+        let beforeMiddle = pos.y < beforeItem.offsetTop + (beforeItem.clientHeight / 2);
         if(beforeMiddle){
             positionItems(orderOfSelectedItem - 1);
             selectedItem.setAttribute('order', orderOfSelectedItem - 1);
@@ -90,7 +93,7 @@ addEventListener('mousemove', function(e){
     };
     if(orderOfSelectedItem !== document.querySelectorAll('.items .item').length){
         let afterItem = document.querySelector(`.items .item[order*="${orderOfSelectedItem + 1}"]`);
-        let afterMiddle = (pos.y - itemsEle.offsetTop) > afterItem.offsetTop + (afterItem.clientHeight / 2);
+        let afterMiddle = pos.y > afterItem.offsetTop + (afterItem.clientHeight / 2);
         if(afterMiddle){
             positionItems(orderOfSelectedItem + 1);
             selectedItem.setAttribute('order', orderOfSelectedItem + 1);
