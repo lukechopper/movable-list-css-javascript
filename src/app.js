@@ -74,7 +74,7 @@ document.querySelectorAll('.items .item').forEach(function(item, index){
 });
 
 addEventListener('mousemove', function(e){
-    pos.x = e.clientX - itemsEle.offsetLeft, pos.y = e.clientY - itemsEle.offsetTop;
+    pos.x = e.clientX - itemsEle.offsetLeft, pos.y = e.clientY - (itemsEle.offsetTop - window.scrollY); //ScrollY, so that a vertical scroll bar does not mess everything up
     if(!mouseDown) return;
     let offsetY = pos.y - diff.y, offsetX = pos.x - diff.x;
     selectedItem.style.top = offsetY + 'px';
